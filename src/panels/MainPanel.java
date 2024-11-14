@@ -1,5 +1,6 @@
 package panels;
 
+import java.io.*;
 import java.util.HashMap;
 import java.util.InputMismatchException;
 import java.util.Map;
@@ -9,6 +10,7 @@ public class MainPanel {
     private final Scanner scan = new Scanner(System.in);
     private final String adminName = "Aladdin";
     private final String adminPassword = "2345";
+    private static String usersTXT = "Users.txt";
     private Map<String, String> user = new HashMap<>();
     UserPanel userPanel;
     AdminPanel adminPanel;
@@ -52,6 +54,7 @@ public class MainPanel {
             if (username.equals(adminName) && password.equals(adminPassword)) {
                 return false;
             }
+            loadFromFile();
             if (user.containsKey(username) && user.get(username).equals(password)) {
                 System.out.println("Login successful! Welcome, " + username + '.');
                 userPanel.showUserPanel();
@@ -78,6 +81,8 @@ public class MainPanel {
             System.out.println("There is a user with this name!");
         } else {
             user.put(username, password);
+            saveToFile();
+            showRegisterDisplay();
             System.out.println("Registration successful! You can now log in.");
 
         }
@@ -113,6 +118,35 @@ public class MainPanel {
         } catch (InputMismatchException e) {
             System.out.println("Invalid input. Please enter the correct format!");
             scan.nextLine();
+        }
+    }
+
+
+    public void saveToFile() {
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(usersTXT))) {
+            for (Map.Entry<String, String> entry : user.entrySet()) {
+                writer.write(entry.getKey() + "=" + entry.getValue());
+                writer.newLine();
+            }
+            System.out.println("The data was successfully written to the file.");
+        } catch (IOException e) {
+            System.out.println("Error writing to file: " + e.getMessage());
+        }
+    }
+
+    public void loadFromFile() {
+        try (BufferedReader reader = new BufferedReader(new FileReader(usersTXT))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split("=");
+                if (parts.length == 2) {
+                    user.put(parts[0], parts[1]);
+                }
+            }
+            System.out.println("Data was successfully loaded from file.");
+        } catch (IOException e) {
+            System.out.println("Error reading from file: " + e.getMessage());
         }
     }
 }
